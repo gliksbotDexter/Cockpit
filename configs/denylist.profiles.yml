@@ -1,0 +1,90 @@
+mode_default: medium
+profiles:
+  low:
+    label: "Low"
+    description: "Baseline guardrails; block obviously destructive processes and highly sensitive paths."
+    policy:
+      process:
+        deny_cmd_patterns:
+          - "*format*"
+          - "rm -rf *"
+          - "del /s *"
+      files:
+        deny_write_globs:
+          - "C:\\Windows\\*"
+          - "C:\\Program Files\\*"
+        deny_dirs:
+          - "C:\\Windows\\System32"
+      hotkeys:
+        deny:
+          - "CTRL+ALT+DELETE"
+          - "ALT+F4"
+      input:
+        max_chars: 6000
+  medium:
+    label: "Medium"
+    description: "Production-friendly; expands denylists for secrets, network, and automation spam."
+    policy:
+      process:
+        deny_cmd_patterns:
+          - "*format*"
+          - "rm -rf *"
+          - "shutdown*"
+          - "powershell*Remove-Item* -Recurse"
+      files:
+        deny_write_globs:
+          - "C:\\Windows\\*"
+          - "C:\\Program Files\\*"
+          - "/etc/*"
+        deny_read_globs:
+          - "*.pem"
+          - "*.key"
+          - "id_rsa"
+        deny_dirs:
+          - "C:\\Windows\\System32"
+          - "C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup"
+      network:
+        deny_url_regex:
+          - "^http://"
+        deny_hosts:
+          - "169.254.*.*"
+          - "metadata.google.internal"
+      hotkeys:
+        deny:
+          - "ALT+F4"
+          - "CTRL+ALT+DELETE"
+          - "CTRL+SHIFT+ESC"
+      windows:
+        deny_classes:
+          - "Shell_TrayWnd"
+        deny_title_patterns:
+          - "*Registry Editor*"
+          - "*Local Group Policy Editor*"
+      input:
+        max_chars: 4000
+        deny_regex:
+          - "(?i)password\\s*:"
+          - "(?i)secret\\s*key"
+      rate_limits:
+        max_clicks_per_min: 300
+        max_keystrokes_per_min: 1500
+  high:
+    label: "High"
+    description: "Paranoid mode; block most automation except read-only observation."
+    policy:
+      process:
+        deny_cmd_patterns:
+          - "*"
+      files:
+        deny_write_globs:
+          - "*"
+      hotkeys:
+        deny:
+          - "*"
+      windows:
+        deny_classes:
+          - "*"
+        deny_title_patterns:
+          - "*"
+      input:
+        max_chars: 200

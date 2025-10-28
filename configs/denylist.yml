@@ -1,0 +1,54 @@
+# Single source of truth: anything not denied here is allowed.
+
+processes:
+  deny_names:
+    - 'cmd.exe /c format'
+    - 'powershell.exe -NoProfile -Command Remove-Item -Recurse C:\'
+    - 'cipher.exe /w:'
+    - 'shutdown.exe'
+  deny_patterns:
+    - 'format *'
+    - 'del /s *'
+    - 'rm -rf *'
+
+files:
+  deny_globs:
+    - 'C:\Windows\**'
+    - 'C:\Program Files\**'
+    - 'C:\Program Files (x86)\**'
+    - 'C:\Users\*\AppData\**'
+  deny_regexes:
+    - '^C:\\Windows(\\|$)'
+  deny_extensions:
+    - '.sys'
+    - '.dll'
+    - '.exe'  # block writes/edits to binaries
+
+network:
+  deny_urls:
+    - 'http://169.254.169.254'
+    - 'http://localhost:4040'
+  deny_domains:
+    - 'pastebin.com'
+    - 'anonfiles.*'
+
+input:
+  deny_hotkeys:
+    - 'ALT+F4'
+    - 'CTRL+SHIFT+ESC'
+    - 'WIN+R'
+  deny_window_classes:
+    - 'Shell_TrayWnd'   # taskbar
+    - 'Progman'         # desktop
+
+windows:
+  deny_titles_patterns:
+    - 'Registry Editor'
+    - 'Local Group Policy Editor'
+
+reasons:
+  processes: 'Dangerous process invocation blocked by policy.'
+  files: 'File path or extension blocked by policy.'
+  network: 'Network target blocked by policy.'
+  input: 'Hotkey or target window class blocked by policy.'
+  windows: 'Target window title blocked by policy.'

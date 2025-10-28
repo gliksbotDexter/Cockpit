@@ -1,0 +1,117 @@
+# Dexter Master Deny List
+# This is the single source of truth for all system safety
+
+# Process commands that are always denied
+process:
+  deny_cmd_patterns:
+    # System destructive commands
+    - "*format*"
+    - "rm -rf /"
+    - "del /f /s /q *.*"
+    - "rd /s /q *.*"
+    
+    # Dangerous PowerShell commands
+    - "Remove-Item* -Recurse -Force"
+    - "Invoke-WebRequest* -OutFile"
+    - "Invoke-Expression*"
+    
+    # Network destructive commands
+    - "iptables*"
+    - "netsh*"
+    - "route*"
+
+# File paths that are always denied
+files:
+  deny_write_globs:
+    # System directories
+    - "C:\\Windows\\*"
+    - "C:\\Program Files\\*"
+    - "C:\\Program Files (x86)\\*"
+    
+    # User critical directories
+    - "C:\\Users\\*\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\*"
+    
+    # Sensitive file types
+    - "*.key"
+    - "*.pem"
+    - "*.cer"
+    - "*.crt"
+    - "id_rsa"
+    - "id_dsa"
+  
+  deny_read_globs:
+    # Sensitive file types
+    - "*.key"
+    - "*.pem"
+    - "*.cer"
+    - "*.crt"
+    - "id_rsa"
+    - "id_dsa"
+    - "*.password"
+    - "*.pwd"
+  
+  deny_dirs:
+    # System directories
+    - "C:\\Windows\\System32"
+    - "C:\\Windows\\SysWOW64"
+    
+    # Boot sectors
+    - "\\\\?\\GLOBALROOT\\Device\\Harddisk0\\DR0"
+
+# Network restrictions
+network:
+  deny_url_regex:
+    # Block all HTTP (non-HTTPS) connections
+    - "^http://"
+    
+    # Block known malicious domains
+    - ".*\\.onion$"
+  
+  deny_hosts:
+    # Private network ranges
+    - "169.254.*.*"
+    - "127.0.0.1"
+    
+    # Internal network ranges (examples)
+    - "192.168.*.*"
+    - "10.*.*.*"
+    - "172.16.*.*"
+    - "172.17.*.*"
+    - "172.18.*.*"
+    - "172.19.*.*"
+    - "172.20.*.*"
+    - "172.21.*.*"
+    - "172.22.*.*"
+    - "172.23.*.*"
+    - "172.24.*.*"
+    - "172.25.*.*"
+    - "172.26.*.*"
+    - "172.27.*.*"
+    - "172.28.*.*"
+    - "172.29.*.*"
+    - "172.30.*.*"
+    - "172.31.*.*"
+
+# Hotkey restrictions
+hotkeys:
+  deny:
+    # System hotkeys
+    - "CTRL+ALT+DELETE"
+    - "CTRL+ALT+ESC"
+    - "CTRL+SHIFT+ESC"
+    - "WINDOWS+L"
+    - "ALT+F4"
+    - "ALT+TAB"
+
+# Input restrictions
+input:
+  max_chars: 10000
+  deny_regex:
+    # SQL injection patterns
+    - "(?i)(union|select|insert|update|delete|drop|create|alter|exec|execute)\\s+"
+    
+    # Script injection patterns
+    - "(?i)(<script|javascript:|vbscript:|onload|onerror)"
+    
+    # Command injection patterns
+    - "(?i)(\\b(0x[0-9a-f]+|\\d+e\\d+|\\d+'\\s*(or|and)\\s*'\\d+))"

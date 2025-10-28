@@ -1,0 +1,6 @@
+chatdock:
+  windows:
+    deny_title_patterns: ["*Production*"]
+unity_builder:
+  process:
+    deny_cmd_patterns: ["*msbuild* /t:Clean*"]

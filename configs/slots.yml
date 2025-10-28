@@ -1,0 +1,228 @@
+# =====================================================================
+# AGENT SLOTS CONFIGURATION
+# =====================================================================
+# This file defines agent slots for the Dexter Cockpit UI.
+# It mirrors the agents defined in dexter_config.yml to ensure UI
+# consistency with the backend configuration.
+#
+# Note: The /slots API endpoint reads directly from dexter_config.yml
+# agents section, but this file can be used for UI-specific overrides.
+# =====================================================================
+
+agents:
+  dexter-orchestrator:
+    label: "Dexter Central Orchestrator"
+    description: "Master orchestrator and decision maker"
+    provider: "ollama"
+    model: "qwen3-vl:235b-cloud"
+    deployment: ""   # For Azure OpenAI; omit or blank if unused
+    temperature: 0.15
+    top_p: 1.0
+    system_prompt: |
+      You are Dexter, the lead orchestrator and decision-maker in a multi-agent AI system.
+      
+      RESPONSIBILITIES:
+      - Lead conversations with the user
+      - Orchestrate collaboration with Helper agent
+      - Consult Brain agent for memories and context
+      - Make final decisions on actions and responses
+      - Escalate to user when confidence is low or stakes are high
+      
+      DECISION AUTHORITY:
+      - In autonomous mode, you make all final decisions
+      - You can delegate tasks to Helper agent
+      - Helper must wait for your instruction to use tools
+      - If you disagree with Helper, your decision wins
+      - Always explain your reasoning transparently
+      
+      COMMUNICATION STYLE:
+      - Professional but conversational
+      - Concise and action-oriented
+      - Transparent about reasoning and uncertainty
+
+  helper-agent:
+    label: "Helper"
+    description: "General assistant for delegated tasks"
+    provider: "nvidia"
+    model: "mistralai/mixtral-8x22b-instruct-v0.1"
+    deployment: ""
+    temperature: 0.25
+    top_p: 0.9
+    system_prompt: |
+      You are the Helper agent, assisting the Dexter Orchestrator by performing delegated tasks.
+      
+      RESPONSIBILITIES:
+      - Execute tasks as instructed by Dexter
+      - Provide information and context when requested
+      - Use tools only when explicitly authorized by Dexter
+      - Defer all final decisions to Dexter
+      
+      COMMUNICATION STYLE:
+      - Supportive and cooperative
+      - Clear and concise
+      - Always reference Dexter's instructions
+providers:
+  # Azure OpenAI (OpenAI-compatible header semantics in provider wrapper)
+  azure:
+    type: "openai-compatible"
+    display_name: "Azure OpenAI"
+    endpoint: "${AZURE_ENDPOINT}"
+    api_key_env: "${AZURE_API_KEY}"
+    default_model: "gpt-5-chat"
+    api_version: "2024-06-01"
+    timeout: 10000
+
+  openai:
+    type: "openai-compatible"
+    display_name: "OpenAI"
+    endpoint: "https://api.openai.com/v1"
+    api_key_env: "OPENAI_API_KEY"
+    default_model: "gpt-4o-mini"
+    timeout: 60000
+
+  nvidia:
+    type: "openai-compatible"
+    display_name: "NVIDIA NIM"
+    endpoint: "https://integrate.api.nvidia.com/v1"
+    api_key_env: "NVIDIA_API_KEY"
+    default_model: "meta/llama-3.1-70b-instruct"
+    timeout: 60000
+
+  ollama:
+    type: "ollama"
+    display_name: "Ollama (Cloud)"
+    endpoint: "https://ollama.com/"
+    api_key_env: "OLLAMA_API_KEY"
+    default_model: "qwen3-vl:235b-cloud"
+    timeout: 60000
+    description: "Cloud-based Ollama instance for enhanced performance"
+
+deny_list:
+  global: {}
+  agents: {}
+
+autonomy:
+  escalation_threshold: 0.65
+  max_autonomous_actions: 5
+
+memory:
+  brain_db: "data/brain.db"
+  bsm_dir: "data/bsm"
+  episodic_db: "data/bsm/episodes.db"
+  knowledge_db: "data/bsm/knowledge.db"
+  patterns_db: "data/bsm/patterns.db"
+  enable_embeddings: true
+  enable_knowledge_graph: true
+
+system:
+  logging:
+    level: "INFO"
+    format: "json"
+    output: "file"
+    log_dir: "data/logs"
+    max_file_size: 104857600
+    retention_days: 300000
+  event_bus:
+    timeout_seconds: 30000
+    max_queue_size: 10000
+    persistence: true
+
+speech:
+  tts:
+    enabled: true
+    auto_speak_responses: true
+    backend: "edge"
+    voice: "en-US-AriaNeural"
+    edge:
+      rate: "+0%"
+      volume: "+0%"
+      pitch: "+0Hz"
+    windows:
+      voice: "Microsoft David Desktop"
+      rate: 200
+      volume: 1.0
+  stt:
+    enabled: true
+    backend: "windows"
+    language: "en-US"
+    windows:
+      use_sphinx: false
+
+features:
+  windows_automation: true
+  vision_ocr: true
+  learning_enabled: true
+  collaboration_enabled: true
+  thinking_enabled: true
+  background_tasks: true
+  websocket_streaming: true
+
+# Tool Configuration
+tools:
+  # Web Search Tool Configuration
+  web_search:
+    timeout: 1500
+    max_retries: 300
+    max_results: 500
+    
+  # Advanced Web Tool Configuration
+  advanced_web:
+    timeout: 3000
+    max_retries: 30
+    navigation_enabled: true
+    
+  # PowerShell Tool Configuration
+  powershell:
+    default_timeout: 30000  # 5 minutes
+    max_history: 5000
+    security:
+      safe_mode: true
+      denylist:
+        
+        - "rm"
+        - "erase"
+        - "format"
+        - "stop-computer"
+        - "restart-computer"
+        - "shutdown"
+      
+    
+  # Shell Tool Configuration
+  shell:
+    timeout: 600
+    security:
+      safe_mode: true
+      denylist:
+        
+        - "erase"
+        - "format"
+        - "rd"
+        - "rmdir"
+    
+  # File Operations Tool Configuration
+  file_ops:
+    max_file_size: 104857600  # 100MB in bytes
+    working_directory: "."
+    security:
+      restrict_to_working_dir: false
+    
+        
+    
+  # GUI Automation Tool Configuration
+  gui_automation:
+    max_gui_history: 10000
+    screenshot_dir: "./screenshots"
+    automation:
+      safety_mode: true
+      gui_backend: "pywinauto, pyautogui"
+
+  # Pro GUI Automation Tool Configuration
+  pro_gui:
+    max_gui_history: 10000
+    screenshot_dir: "./screenshots"
+    automation:
+      safety_mode: true
+      gui_backend:  "pywinauto, pyautogui"
+
+
+
